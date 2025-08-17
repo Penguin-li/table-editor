@@ -139,19 +139,25 @@
             background-color: #1976D2;
         }
 
+        /* 预览区域：使用 flex 垂直居中 */
         .preview-content {
             border: 1px solid #ddd;
             padding: 20px;
             background-color: white;
             border-radius: 5px;
             width: 100%;
-            height: 500px; /* 扩大预览区域 */
-            overflow-y: auto; /* 添加滚动条 */
+            min-height: 0; /* 允许 flex 收缩 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
 
         .preview-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            width: 100%;
         }
 
         .preview-title {
@@ -159,12 +165,6 @@
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
-        }
-
-        .preview-subtitle {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 10px;
         }
 
         .preview-badge {
@@ -177,10 +177,18 @@
             font-size: 14px;
         }
 
+        .preview-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+            margin-top: 5px;
+        }
+
         .preview-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 10px 0;
+            table-layout: fixed;
         }
 
         .preview-table th {
@@ -194,29 +202,15 @@
         .preview-table td {
             padding: 12px;
             text-align: center;
+            border-bottom: 1px solid #eee;
         }
 
         .preview-footer {
             font-size: 14px;
             color: #666;
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: center;
-        }
-
-        .resizer {
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            width: 5px;
-            background: #ccc;
-            cursor: col-resize;
-            user-select: none;
-            z-index: 10;
-        }
-
-        .resizer:hover {
-            background: #999;
+            width: 100%;
         }
 
         @media (max-width: 768px) {
@@ -228,16 +222,6 @@
                 border-right: none;
                 border-bottom: 1px solid #eee;
             }
-        }
-
-        /* 样式优化 */
-        .preview-table {
-            table-layout: fixed; /* 确保列宽均匀分布 */
-        }
-
-        .preview-table th,
-        .preview-table td {
-            width: calc(33.33%); /* 确保三列宽度相等 */
         }
     </style>
 </head>
@@ -369,9 +353,9 @@
                 <div class="section-title">预览效果</div>
                 <div class="preview-content" id="preview-content">
                     <div class="preview-header">
-                        <span class="preview-title">尺码推荐</span>
+                        <span class="preview-title">尺码推荐表</span>
                         <span class="preview-badge">英杰外贸服饰</span>
-                        <p class="preview-subtitle">RECOMMENDED</p>
+                        <p class="preview-subtitle">英杰外贸服饰</p>
                     </div>
                     <table id="preview-table" class="preview-table">
                         <thead>
@@ -434,7 +418,6 @@
                 const dataCells = dataRow.querySelectorAll('td input');
                 const newRow = document.createElement('tr');
                 
-                // 创建新的预览行
                 newRow.innerHTML = `
                     <td>${dataCells[0] ? dataCells[0].value : ''}</td>
                     <td>${dataCells[1] ? dataCells[1].value : ''}</td>
@@ -597,7 +580,20 @@
         // 导出为图片
         function exportAsImage() {
             const previewSection = document.getElementById('preview-content');
-            html2canvas(previewSection).then(canvas => {
+
+            // 确保滚动到顶部
+            previewSection.scrollTo(0, 0);
+
+            // 使用 html2canvas 完整捕获内容
+            html2canvas(previewSection, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0,
+                width: previewSection.offsetWidth,
+                height: previewSection.scrollHeight,
+            }).then(canvas => {
                 const imgDataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.download = '尺码推荐表.png';
@@ -608,10 +604,7 @@
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function () {
-            // 页面加载时尝试加载数据
             loadDataFromLocalStorage();
-            
-            // 初始化预览
             updatePreview();
         });
     </script>
